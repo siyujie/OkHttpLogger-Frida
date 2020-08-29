@@ -1,3 +1,10 @@
+/**
+	说明 ： 通过加载java实现的寻找okhttp特征的代码打印出可能会用到的okhttp 关键类；
+	寻找之前只了okio 和 okhttp 开通的包名，如果包名被混下了，需要自己去找一下包名，
+	或者改一下逻去掉限制，直接全部搜索。
+*/
+
+
 function okhttp_find(){
     Java.perform(function(){
         
