@@ -1,3 +1,12 @@
+/*
+ 此实现是通过添加Interceptor的方法进行的打印okhttp日志，
+ 动态代理创建Interceptor的实现类对象，添加到OkhttpClient的interceptors中
+ 主要实现过程和之前写的Xposed实现的okhttp的Interceptor同一流程
+ 
+    https://github.com/siyujie/OkHttpLoggerInterceptor-hook
+ 
+*/
+
 var Cls_OkHttpClient = "okhttp3.OkHttpClient";
 var F_Client_interceptors = "interceptors";
 var Cls_OkHttpClient$Builder = "okhttp3.OkHttpClient$Builder";
@@ -308,7 +317,7 @@ function isPlaintext(byteString){
             if(bufferSize == 0){
                 break
             }
-            var codePoint = buffer[M_buffer_readUtf8CodePoint]()
+            var codePoint = buffer.readUtf8CodePoint()
             // console.log(" isPlaintext >  codePoint >>> "+ codePoint)
             var Character = Java.use("java.lang.Character")
             //console.log(" isPlaintext  ???? "+(Character.isISOControl(codePoint) && !Character.isWhitespace(codePoint)))
@@ -327,12 +336,12 @@ function isPlaintext(byteString){
 
 function getByteString(buffer){
     var bytearray = buffer[M_buffer_readByteArray]();
-    var byteString = Java.use("okio.ByteString").of(bytearray)
+    var byteString = Java.use("com.singleman.okio.ByteString").of(bytearray)
     return byteString;
 }
 
 function NewBuffer(byteString){
-    var bufferCls = Java.use(Cls_okio_Buffer);
+    var bufferCls = Java.use("com.singleman.okio.Buffer");
     var buffer = bufferCls.$new()
     byteString.write(buffer)
     return buffer;
