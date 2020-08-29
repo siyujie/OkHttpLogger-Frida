@@ -4,10 +4,11 @@ Frida 实现拦截okhttp的脚本
 
 ### 使用说明
 
-> 首先将 `okhttpfind.dex` 拷贝到 `/mnt/sdcard/` 目录下，然后给目标App授予存储权限；
+> 首先将 `okhttpfind.dex` 拷贝到 `/mnt/sdcard/` 目录下，然后给目标App授予存储权限。
+
 例：`frida -U com.example.demo -l okhttp_poker.js`
 
-> 接下来使用okhttp的所有请求将被拦截并打印出来；
+> 接下来使用okhttp的所有请求将被拦截并打印出来。
 
 #### 扩展函数：
 - `history()`    会打印出所有的被抓到的请求信息
@@ -27,7 +28,8 @@ Frida 实现拦截okhttp的脚本
 也可以缓存下来每一个请求的`call`对象，进行再次请求，所以选择了此处进行hook。
 
 #### 抓取打印的样例
->  一次性请求太多会出现打印错乱现象，由于自己太菜，暂时没有解决这个问题,希望求得大佬指点
+
+>  一次性请求太多会出现打印错乱现象，由于自己太菜，暂时没有解决这个问题,希望求得大佬指点,万分感谢!!!
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -64,4 +66,37 @@ Frida 实现拦截okhttp的脚本
 |<-- END HTTP
 └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-`
+```
+###### 例子2
+```
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+| URL: http://****/searchByKeywork
+|
+| Method: POST
+|                                                                                                                    
+| Headers:
+|   ┌─Content-Type: application/x-www-form-urlencoded
+|   └─Content-Length: 20
+|
+| Body:
+|   userId=*****&keyword=run
+|
+|--> END 
+|
+| URL: http://****/searchByKeywork
+|
+| Status Code: 200 / 
+|
+| Headers:
+|   ┌─Content-Type: application/json;charset=UTF-8
+|   ┌─Transfer-Encoding: chunked
+|   └─Date: Sat, 29 Aug 2020 10:18:50 GMT
+| 
+| Body:
+|   {"code":1000,"message":"成功","result":[{"id":"jqjcRQFO2","name":"RUN","remark":"","shareKey":"dRbkPjn
+|   J2sjVJTP0G","cover":null,"list":null,"index":0,"note":"更新至20200123期"}]}
+| 
+|<-- END HTTP
+└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+```
