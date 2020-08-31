@@ -108,49 +108,56 @@ Frida 实现拦截okhttp的脚本
  
 ~~~~~~~~~~~~~~~Start Find~~~~~~~~~~~~~~~~~~~~~~~~
 
-var Cls_OkHttpClient = "okhttp3.O0000ooO";
-var F_Client_interceptors = "O0000Oo";
-var Cls_OkHttpClient$Builder = "okhttp3.O0000ooO$O00000Oo";
-var M_Builder_build = "O000000o";
-var F_Builder_interceptors = "O00000oO";
+var Cls_Call = "okhttp3.O00000oO";
+var Cls_CallBack = "okhttp3.O00000oo";
 var Cls_Interceptor = "okhttp3.O0000oOo";
+var Cls_OkHttpClient = "okhttp3.O0000ooO";
+var Cls_OkHttpClient$Builder = "okhttp3.O0000ooO$O00000Oo";
+var Cls_Request = "okhttp3.O00oOooO";
+var Cls_Response = "okhttp3.O000O00o";
+var Cls_ResponseBody = "okhttp3.O000O0OO";
+var Cls_okio_Buffer = "okio.O00000o0";
+var F_Builder_interceptors = "O00000oO";
+var F_Client_interceptors = "O0000Oo";
+var M_Builder_build = "O000000o";
+var M_CallBack_onResponse = "O000000o";
+var M_Call_enqueue = "O000000o";
+var M_Call_execute = "execute";
+var M_Call_request = "O0000oO";
+var M_Client_newCall = "O000000o";
 var M_Interceptor_intercept = "intercept";
+var M_buffer_readByteArray = "O0000ooO";
+var M_chain_connection = "O00000o0";
 var M_chain_proceed = "O000000o";
-var M_req_body = "O000000o";
-var M_reqbody_contentLength = "contentLength";
-var M_reqbody_contentType = "contentType";
+var M_chain_request = "O0000oO";
+var M_connection_protocol = "O000000o";
 var M_contentType_charset = "O000000o";
-var M_reqbody_writeTo = "writeTo";
-var M_req_headers = "O00000o0";
-var M_header_name = "O000000o";
 var M_header_get = "O000000o";
+var M_header_name = "O000000o";
 var M_header_size = "O00000Oo";
 var M_header_value = "O00000Oo";
+var M_req_body = "O000000o";
+var M_req_headers = "O00000o0";
 var M_req_method = "O00000oO";
 var M_req_newBuilder = "O00000oo";
 var M_req_url = "O0000OOo";
+var M_reqbody_contentLength = "contentLength";
+var M_reqbody_contentType = "contentType";
+var M_reqbody_writeTo = "writeTo";
 var M_rsp$builder_body = "O000000o";
 var M_rsp$builder_build = "O000000o";
-var M_rsp_body = "O000000o";
-var Cls_ResponseBody = "okhttp3.O000O0OO";
-var M_rspBody_create = "create";
 var M_rspBody_contentLength = "contentLength";
 var M_rspBody_contentType = "contentType";
+var M_rspBody_create = "create";
 var M_rspBody_source = "source";
-var M_source_request = "request";
 var M_rspBody_string = "string";
+var M_rsp_body = "O000000o";
 var M_rsp_code = "O00000o0";
 var M_rsp_headers = "O00000oO";
 var M_rsp_message = "O0000O0o";
 var M_rsp_newBuilder = "O0000Oo0";
 var M_rsp_request = "O0000o00";
-var M_chain_connection = "O00000o0";
-var M_connection_protocol = "O000000o";
-var M_chain_request = "O0000oO";
-
-var Cls_okio_Buffer = "okio.O00000o0";
-var M_buffer_readUtf8CodePoint = "O00000oO";
-var M_buffer_readByteArray = "O0000ooO";
+var M_source_request = "request";
 
 ~~~~~~~~~~~~~~~~Find Complete!~~~~~~~~~~~~~~~~~~~~~~
 ```
