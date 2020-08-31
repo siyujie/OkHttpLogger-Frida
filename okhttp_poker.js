@@ -32,6 +32,7 @@ var F_Builder_interceptors = "interceptors";
 var F_Client_interceptors = "interceptors";
 var M_Builder_build = "build";
 var M_CallBack_onResponse = "onResponse";
+var M_Call_clone = "clone";
 var M_Call_enqueue = "enqueue";
 var M_Call_execute = "execute";
 var M_Call_request = "request";
@@ -472,10 +473,11 @@ function findPokerEnter(){
             var call = this[M_Client_newCall](request)
 
             try {
-                CallCache.push(call.clone())
+                CallCache.push(call[M_Call_clone]())
             } catch (error) {
                 console.log("not fount clone method!")
             }
+            
 
             var realCallClassName = call.$className
 
@@ -529,17 +531,6 @@ function hookRealCall(realCallClassName){
 }
 
 setImmediate(findPokerEnter)
-
-
-
-
-
-
-
-
-
-
-
 
 
 
