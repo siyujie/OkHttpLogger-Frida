@@ -471,7 +471,11 @@ function findPokerEnter(){
         OkHttpClient[M_Client_newCall].overload(Cls_Request).implementation = function(request){
             var call = this[M_Client_newCall](request)
 
-            CallCache.push(call)
+            try {
+                CallCache.push(call.clone())
+            } catch (error) {
+                console.log("not fount clone method!")
+            }
 
             var realCallClassName = call.$className
 
