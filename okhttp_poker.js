@@ -19,180 +19,87 @@
 */
 
 
-
-
+var Cls_Call = "okhttp3.Call";
+var Cls_CallBack = "okhttp3.Callback";
+var Cls_Interceptor = "okhttp3.Interceptor";
 var Cls_OkHttpClient = "okhttp3.OkHttpClient";
-var M_req_body = "body";
-var M_reqbody_contentLength = "contentLength";
-var M_reqbody_contentType = "contentType";
+var Cls_OkHttpClient$Builder = "okhttp3.OkHttpClient$Builder";
+var Cls_Request = "okhttp3.Request";
+var Cls_Response = "okhttp3.Response";
+var Cls_ResponseBody = "okhttp3.ResponseBody";
+var Cls_okio_Buffer = "okio.Buffer";
+var F_Builder_interceptors = "interceptors";
+var F_Client_interceptors = "interceptors";
+var M_Builder_build = "build";
+var M_CallBack_onResponse = "onResponse";
+var M_Call_enqueue = "enqueue";
+var M_Call_execute = "execute";
+var M_Call_request = "request";
+var M_Client_newCall = "newCall";
+var M_Interceptor_intercept = "intercept";
+var M_buffer_readByteArray = "readByteArray";
+var M_chain_connection = "connection";
+var M_chain_proceed = "proceed";
+var M_chain_request = "request";
+var M_connection_protocol = "protocol";
 var M_contentType_charset = "charset";
-var M_reqbody_writeTo = "writeTo";
-var M_req_headers = "headers";
 var M_header_get = "get";
 var M_header_name = "name";
 var M_header_size = "size";
 var M_header_value = "value";
+var M_req_body = "body";
+var M_req_headers = "headers";
 var M_req_method = "method";
+var M_req_newBuilder = "newBuilder";
 var M_req_url = "url";
+var M_reqbody_contentLength = "contentLength";
+var M_reqbody_contentType = "contentType";
+var M_reqbody_writeTo = "writeTo";
 var M_rsp$builder_body = "body";
 var M_rsp$builder_build = "build";
-var M_rsp_body = "body";
-var Cls_ResponseBody = "okhttp3.ResponseBody";
-var M_rspBody_create = "create";
 var M_rspBody_contentLength = "contentLength";
 var M_rspBody_contentType = "contentType";
+var M_rspBody_create = "create";
 var M_rspBody_source = "source";
+var M_rspBody_string = "string";
+var M_rsp_body = "body";
 var M_rsp_code = "code";
 var M_rsp_headers = "headers";
 var M_rsp_message = "message";
 var M_rsp_newBuilder = "newBuilder";
 var M_rsp_request = "request";
-
-var Cls_okio_Buffer = "okio.Buffer";
-var M_buffer_readByteArray = "readByteArray";
+var M_source_request = "request";
 
 
 //----------------------------------
-
-var requestClazz = null;
-
-var Call_requestMethodName = ""
-var Call_executeMethodName = ""
-
 var CallCache = []
 
-
-function hookRealCall(realCallClassName,requestClassName){
-
-    Java.perform(function(){
-
-        var Modifier = Java.use("java.lang.reflect.Modifier")
-
-        // console.log("RealCallClassName : " + realCallClassName)
-
-        var executeMethodName = ""
-        var enqueueMethodName = ""
-
-        var RealCallClazz = Java.use(realCallClassName)
-        var callMethodArray = RealCallClazz.class.getDeclaredMethods()
-        for(var i = 0;i<callMethodArray.length;i++){
-            var method = callMethodArray[i]
-            method.setAccessible(true)
-
-            if(method.toGenericString().indexOf("Exception") != -1
-                && method.getParameterCount() == 0
-                && Modifier.isFinal(method.getReturnType().getModifiers())
-            ){
-
-                if("" == executeMethodName){
-                    executeMethodName = method.getName();
-                    Call_executeMethodName = executeMethodName;
-                    // console.log("find >> call execute : ",executeMethodName)
-                }
-            }
-
-            if(method.getParameterCount() == 1 && method.getParameterTypes()[0].isInterface()){
-
-                enqueueMethodName = method.getName();
-
-                // console.log("find >> call enqueue : ",enqueueMethodName)
-
-            }
-
-            if(requestClassName == method.getReturnType().getName() 
-                && method.getParameterCount() == 0
-            ){
-                Call_requestMethodName = method.getName()
-            }
-
-        }
-
-        RealCallClazz[executeMethodName].overload().implementation = function(){
-
-            var response = this[executeMethodName]()
-
-            var newResponse = findRequestAndPrint(response)
-
-            return newResponse;
-
-
-        }
-        RealCallClazz[enqueueMethodName].implementation = function(callback){
-
-            var callbackClassName = callback.$className
-
-            var RealCallBack = Java.use(callbackClassName)
-
-            var onResponseMethodName = ""
-
-            var methodArray = RealCallBack.class.getDeclaredMethods()
-            for(var i=0;i<methodArray.length;i++){
-                var method = methodArray[i]
-                method.setAccessible(true)
-                
-                if(method.toGenericString().indexOf("IOException") != -1 
-                    && method.getParameterCount() == 2
-                    && Modifier.isFinal(method.getParameterTypes()[1].getModifiers())
-                ){
-                    onResponseMethodName = method.getName()
-                    // console.log("find >> onResponseMethodName : ",onResponseMethodName)
-                }
-            }
-            
-            RealCallBack[onResponseMethodName].implementation = function(call,response){
-
-                var newResponse = findRequestAndPrint(response)
-
-                this[onResponseMethodName](call,newResponse)
-
-            }
-        }
-
-    })
-
-}
-
-
-function findRequestAndPrint(responseObject){
-
+function buildNewResponse(responseObject){
     var newResponse = null;
-
     Java.perform(function(){
         try {
-            
-            var ResponseClazz = Java.use(responseObject.$className);
-            var requestMethodName = ""
-            var methodArray = ResponseClazz.class.getDeclaredMethods()
-            for(var i = 0;i<methodArray.length;i++){
-                var method = methodArray[i]
-                method.setAccessible(true)
-
-                if(method.getReturnType().getName() == requestClazz.getName()){
-
-                    requestMethodName = method.getName()
-                    // console.log("find >> requestMethodName : ",requestMethodName)
-
-                }
-            }
-
-            var request = responseObject[requestMethodName]()
 
             console.log("");
             console.log("┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
-
-            printerRequest(request)
-            newResponse =  printerResponse(responseObject)
+            
+            newResponse =  printAll(responseObject)
 
             console.log("└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
             console.log("");
         } catch (error) {
-            console.log("findRequestAndPrint ERROR : "+error);
+            console.log("printAll ERROR : "+error);
         }
     })
-
     return newResponse;
 }
 
+
+function printAll(responseObject){
+    var request = responseObject[M_rsp_request]()
+    printerRequest(request)
+    var newResponse = printerResponse(responseObject)
+    return newResponse;
+}
 
 
 function printerRequest(request){
@@ -270,11 +177,9 @@ function printerRequest(request){
 
 
 function printerResponse(response){
-
     var newResponse = null;
     var Charset = Java.use("java.nio.charset.Charset")
     var defChatset = Charset.forName("UTF-8")
-    //response.code() + ' ' + response.message() + ' ' + response.request().url()
 
     console.log("| URL: "+response[M_rsp_request]()[M_req_url]())
     console.log("|")
@@ -332,8 +237,6 @@ function printerResponse(response){
         }
         console.log("|"+"<-- END HTTP");
     }
-
-    
     return newResponse;
 }
 
@@ -423,10 +326,10 @@ function readBufferString(byteString, chatset){
 function splitLine(string,tag){
     var newSB = Java.use("java.lang.StringBuilder").$new()
     var newString = Java.use("java.lang.String").$new(string)
-    var lineNum = Math.ceil(newString.length()/100)
+    var lineNum = Math.ceil(newString.length()/150)
     for(var i = 0;i<lineNum;i++){
-        var start = i*100;
-        var end = (i+1)*100
+        var start = i*150;
+        var end = (i+1)*150
         newSB.append(tag)
         if(end > newString.length()){
             newSB.append(newString.substring(start,newString.length()))
@@ -439,12 +342,11 @@ function splitLine(string,tag){
 }
 
 /**
- * not use
+ * 
  */
 function findClassLoader(){
     Java.perform(function(){
         Java.enumerateClassLoaders({
-
             onMatch:function(loader){
                 // console.log("loader : "+loader)
                 try {
@@ -480,10 +382,10 @@ function history(){
             console.log("History Size : "+CallCache.length)
             for(var i=0;i<CallCache.length;i++){
                 var call = CallCache[i]
-                if("" != Call_requestMethodName){
-                    console.log("History index["+i+"]"+" >> "+call[Call_requestMethodName]())
+                if("" != M_Call_request){
+                    console.log("History index["+i+"]"+" >> "+call[M_Call_request]())
                 }else{
-                    console.log("History index["+i+"]")
+                    console.log("History index["+i+"]"+"    ????  M_Call_execute = \"\"")
                 }
                 
             }
@@ -504,10 +406,10 @@ function resend(index){
         try {
             console.log("resend >> "+index)
             var call = CallCache[index]
-            if("" != Call_executeMethodName){
-                call[Call_executeMethodName]()
+            if("" != M_Call_execute){
+                call[M_Call_execute]()
             }else{
-                console.log("Call_executeMethodName = null")
+                console.log("M_Call_execute = null")
             }
             
 
@@ -525,48 +427,22 @@ function resend(index){
 function findPokerEnter(){
     Java.perform(function(){
         //
-        //findClassLoader()
+        findClassLoader()
 
         Java.openClassFile("/mnt/sdcard/okhttpfind.dex").load()
 
         var OkHttpClient = Java.use(Cls_OkHttpClient)
 
-        var newCallMethodName = ""
+        OkHttpClient[M_Client_newCall].overload(Cls_Request).implementation = function(request){
+            var call = this[M_Client_newCall](request)
 
-        var okMethodArray = OkHttpClient.class.getDeclaredMethods()
-        for(var i = 0;i<okMethodArray.length;i++){
-            var method = okMethodArray[i]
-            method.setAccessible(true)
-
-            if(method.getParameterCount() == 1 && method.getReturnType().isInterface()){
-
-                newCallMethodName = method.getName();
-
-                // var returnClazz = method.getReturnType()
-
-                requestClazz = method.getParameterTypes()[0]
-
-                // console.log("find >> newCall : ",newCallMethodName)
-                // console.log("find >> newCall(params) : ",requestClazz.getName())
-
-            }
-        }
-
-        OkHttpClient[newCallMethodName].implementation = function(request){
-
-            var call = this[newCallMethodName](request)
-
-            var cloneCall = call.clone();
-
-            CallCache.push(cloneCall)
+            CallCache.push(call)
 
             var realCallClassName = call.$className
 
-            console.log(" >>> : "+realCallClassName)
+            // console.log(" >>> : "+realCallClassName)
 
-            hookRealCall(realCallClassName,request.$className)
-
-            console.log("-------------------------------------HOOK SUCCESS--------------------------------------------------")
+            hookRealCall(realCallClassName)
 
             return call;
         }
@@ -575,4 +451,49 @@ function findPokerEnter(){
 }
 
 
+
+function hookRealCall(realCallClassName){
+    Java.perform(function(){
+
+        var RealCall = Java.use(realCallClassName)
+        //异步
+        RealCall[M_Call_enqueue].overload(Cls_CallBack).implementation = function(callback){
+
+            var realCallBackClassName = callback.$className
+            Java.use(realCallBackClassName)[M_CallBack_onResponse].overload(Cls_Call, Cls_Response).implementation = function(call,response){
+
+                console.log("-------------------------------------HOOK SUCCESS 异步--------------------------------------------------")
+                var newResponse = buildNewResponse(response)
+    
+                this[M_CallBack_onResponse](call,newResponse)
+    
+            }          
+            
+            this[M_Call_enqueue](callback)
+        }
+
+        //同步  
+        RealCall[M_Call_execute].overload().implementation = function(){
+
+            console.log("-------------------------------------HOOK SUCCESS 同步--------------------------------------------------")
+
+            var response = this[M_Call_execute]()
+
+            var newResponse = buildNewResponse(response)
+
+            return newResponse;
+        }
+    })
+
+}
+
 setImmediate(findPokerEnter)
+
+
+
+
+
+
+
+
+
