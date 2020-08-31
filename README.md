@@ -13,6 +13,15 @@ Frida 实现拦截okhttp的脚本
 
 #### 扩展函数：
 - `history()`    会打印出所有的被抓到请求的记录列表
+```
+History Size : 40
+History index[0] >> Request{method=POST, url=https://www.****.com/api3/getads, tags={class retrofit2.O0000Oo0=cn.com.open.****.component.advertise.core.O00000Oo.O000000o() [jinzhiwei, 0]}}
+History index[1] >> Request{method=POST, url=https://www.i****.com/api3/getads, tags={class retrofit2.O0000Oo0=cn.com.open.****.component.advertise.core.O00000Oo.O000000o() [classtop, 0]}}
+History index[2] >> Request{method=GET, url=http://img.mukewang.com/5f4cadb80964527d03280188.png, tags={}}
+History index[3] >> Request{method=POST, url=https://www.i****.com/api3/payarticlelist, tags={class retrofit2.O0000Oo0=O00o0OoO.O000000o() [0, 0]}}
+History index[4] >> Request{method=POST, url=https://www.i****.com/api3/payarticlefilter, tags={class retrofit2.O0000Oo0=O00o0OoO.O000000o() []}}
+History index[5] >> Request{method=POST, url=https://www.i****.com/api3/getads, tags={class retrofit2.O0000Oo0=cn.com.open.****.component.advertise.core.O00000Oo.O000000o() [columntop, 0]}}
+```
 - `resend(index)`   重新发送请求 例子： `resend(0)` 重新发送第一个请求
 
 		
