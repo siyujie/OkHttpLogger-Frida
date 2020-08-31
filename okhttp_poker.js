@@ -73,6 +73,9 @@ var M_source_request = "request";
 
 //----------------------------------
 var CallCache = []
+var hookedArray = []
+//
+var filterArray = [".jpg",".png",".zip",".jpeg",".webp"]
 
 function buildNewResponse(responseObject){
     var newResponse = null;
@@ -181,7 +184,15 @@ function printerResponse(response){
     var Charset = Java.use("java.nio.charset.Charset")
     var defChatset = Charset.forName("UTF-8")
 
-    console.log("| URL: "+response[M_rsp_request]()[M_req_url]())
+    var url = response[M_rsp_request]()[M_req_url]()
+    
+    var shielded = filterUrl(url.toString())
+
+    if(shielded){
+        return response;
+    }
+
+    console.log("| URL: "+url)
     console.log("|")
     console.log("| Status Code: "+response[M_rsp_code]()+" / "+response[M_rsp_message]())
     console.log("|")
@@ -344,6 +355,30 @@ function splitLine(string,tag){
 /**
  * 
  */
+function alreadyHook(str){
+    for(var i=0;i<hookedArray.length;i++){
+        if(str == hookedArray[i]){
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * 
+ */
+function filterUrl(url){
+    for(var i=0;i<filterArray.length;i++){
+        if(url.indexOf(filterArray[i])){
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * 
+ */
 function findClassLoader(){
     Java.perform(function(){
         Java.enumerateClassLoaders({
@@ -440,10 +475,10 @@ function findPokerEnter(){
 
             var realCallClassName = call.$className
 
-            // console.log(" >>> : "+realCallClassName)
-
-            hookRealCall(realCallClassName)
-
+            if(!alreadyHook(realCallClassName)){
+                hookedArray.push(realCallClassName)
+                hookRealCall(realCallClassName)
+            }
             return call;
         }
 
@@ -454,6 +489,8 @@ function findPokerEnter(){
 
 function hookRealCall(realCallClassName){
     Java.perform(function(){
+
+         console.log(" ...........  hookRealCall  : "+realCallClassName)
 
         var RealCall = Java.use(realCallClassName)
         //异步
@@ -488,6 +525,11 @@ function hookRealCall(realCallClassName){
 }
 
 setImmediate(findPokerEnter)
+
+
+
+
+
 
 
 
