@@ -14,7 +14,7 @@ Frida 实现拦截okhttp的脚本
 #### 扩展函数：
 - `history()`    会打印出所有的被抓到请求的记录列表
 ```
-History Size : 40
+History Size : 6
 History index[0] >> Request{method=POST, url=https://www.****.com/api3/getads, tags={class retrofit2.O0000Oo0=cn.com.open.****.component.advertise.core.O00000Oo.O000000o() [jinzhiwei, 0]}}
 History index[1] >> Request{method=POST, url=https://www.i****.com/api3/getads, tags={class retrofit2.O0000Oo0=cn.com.open.****.component.advertise.core.O00000Oo.O000000o() [classtop, 0]}}
 History index[2] >> Request{method=GET, url=http://img.mukewang.com/5f4cadb80964527d03280188.png, tags={}}
