@@ -166,7 +166,7 @@ function printerRequest(request){
         var charset = defChatset
         var contentType = requestBody[M_reqbody_contentType]()
         if(null != contentType){
-            var appcharset = contentType[M_contentType_charset]();
+            var appcharset = contentType[M_contentType_charset](defChatset);
             if(null != appcharset){
                 charset = appcharset;
                 // console.log("--------------->"+charset)
@@ -228,7 +228,7 @@ function printerResponse(response){
             var charset = defChatset
             var contentType = responseBody[M_rspBody_contentType]()
             if(null != contentType){
-                var appcharset = contentType[M_contentType_charset]()
+                var appcharset = contentType[M_contentType_charset](defChatset)
                 if(null != appcharset){
                     charset = appcharset
                 }
