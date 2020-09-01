@@ -74,9 +74,10 @@ var M_source_request = "request";
 
 //----------------------------------
 var CallCache = []
+
 var hookedArray = []
-//
-var filterArray = [".jpg",".png",".zip",".jpeg",".webp"]
+//过滤器，没啥用  主要过一些图片请求  被过滤的请求不会打印请求结果
+var filterArray = []
 
 function buildNewResponse(responseObject){
     var newResponse = null;
@@ -99,8 +100,12 @@ function buildNewResponse(responseObject){
 
 
 function printAll(responseObject){
-    var request = responseObject[M_rsp_request]()
-    printerRequest(request)
+    try {
+        var request = responseObject[M_rsp_request]()
+		printerRequest(request)
+    } catch (error) {
+        return responseObject;
+    }
     var newResponse = printerResponse(responseObject)
     return newResponse;
 }
@@ -164,6 +169,7 @@ function printerRequest(request){
             var appcharset = contentType[M_contentType_charset]();
             if(null != appcharset){
                 charset = appcharset;
+                // console.log("--------------->"+charset)
             }
         }
         if(isPlaintext(reqByteString)){
@@ -182,73 +188,78 @@ function printerRequest(request){
 
 function printerResponse(response){
     var newResponse = null;
-    var Charset = Java.use("java.nio.charset.Charset")
-    var defChatset = Charset.forName("UTF-8")
+    try {
+        var Charset = Java.use("java.nio.charset.Charset")
+        var defChatset = Charset.forName("UTF-8")
 
-    var url = response[M_rsp_request]()[M_req_url]()
-    
-    var shielded = filterUrl(url.toString())
+        var url = response[M_rsp_request]()[M_req_url]()
 
-    if(shielded){
-        return response;
-    }
-
-    console.log("| URL: "+url)
-    console.log("|")
-    console.log("| Status Code: "+response[M_rsp_code]()+" / "+response[M_rsp_message]())
-    console.log("|")
-    var responseBody = response[M_rsp_body]()
-    var contentLength = responseBody[M_rspBody_contentLength]()
-    var resp_headers = response[M_rsp_headers]()
-    var respHeaderSize = resp_headers[M_header_size]()
-    console.log("| Headers:")
-    for (var i = 0; i < respHeaderSize;i++) {
-        var tag = i==(respHeaderSize-1) ? "└─" : "┌─"
-        console.log("|   "+tag+resp_headers[M_header_name](i)+": "+resp_headers[M_header_value](i))
-    }
-
-    var content = "";
-    var nobody = !hasBody(response)
-    if(nobody){
-        console.log("| No Body : ",response)
-        console.log("|"+"<-- END HTTP")
-    }else if(bodyEncoded(resp_headers)){
-        console.log("|"+"<-- END HTTP (encoded body omitted)")
-    }else{
-        console.log("| ");
-        console.log("| Body:")
-        var source = responseBody[M_rspBody_source]()
-        var rspByteString = getByteString(source)
-        var charset = defChatset
-        var contentType = responseBody[M_rspBody_contentType]()
-        if(null != contentType){
-            var appcharset = contentType[M_contentType_charset]()
-            if(null != appcharset){
-                charset = appcharset
-            }
+        var shielded = filterUrl(url.toString())
+        if(shielded){
+            return response;
         }
-        var mediaType = responseBody[M_rspBody_contentType]()
-        var class_responseBody = Java.use(Cls_ResponseBody)
-        var newBody = class_responseBody[M_rspBody_create](mediaType, rspByteString.toByteArray())
-        var newBuilder = response[M_rsp_newBuilder]()
-        newResponse = newBuilder[M_rsp$builder_body](newBody)[M_rsp$builder_build]()    
-        
 
-        if(!isPlaintext(rspByteString)){
-            console.log("|"+"<-- END HTTP (binary body omitted)");
+        console.log("| URL: "+url)
+        console.log("|")
+        console.log("| Status Code: "+response[M_rsp_code]()+" / "+response[M_rsp_message]())
+        console.log("|")
+        var responseBody = response[M_rsp_body]()
+        var contentLength = responseBody[M_rspBody_contentLength]()
+        var resp_headers = response[M_rsp_headers]()
+        var respHeaderSize = resp_headers[M_header_size]()
+        console.log("| Headers:")
+        for (var i = 0; i < respHeaderSize;i++) {
+            var tag = i==(respHeaderSize-1) ? "└─" : "┌─"
+            console.log("|   "+tag+resp_headers[M_header_name](i)+": "+resp_headers[M_header_value](i))
         }
-        if (contentLength != 0) {
-            try {
-                var content = readBufferString(rspByteString, charset)
-                console.log(splitLine(content,"|   "))
-            } catch (error) {
-                console.log(splitLine("Base64["+rspByteString.base64()+"]","|   "))
-            }
-            
+
+        var content = "";
+        var nobody = !hasBody(response)
+        if(nobody){
+            console.log("| No Body : ",response)
+            console.log("|"+"<-- END HTTP")
+        }else if(bodyEncoded(resp_headers)){
+            console.log("|"+"<-- END HTTP (encoded body omitted)")
+        }else{
             console.log("| ");
+            console.log("| Body:")
+            var source = responseBody[M_rspBody_source]()
+            var rspByteString = getByteString(source)
+            var charset = defChatset
+            var contentType = responseBody[M_rspBody_contentType]()
+            if(null != contentType){
+                var appcharset = contentType[M_contentType_charset]()
+                if(null != appcharset){
+                    charset = appcharset
+                }
+            }
+            var mediaType = responseBody[M_rspBody_contentType]()
+            var class_responseBody = Java.use(Cls_ResponseBody)
+            var newBody = class_responseBody[M_rspBody_create](mediaType, rspByteString.toByteArray())
+            var newBuilder = response[M_rsp_newBuilder]()
+            newResponse = newBuilder[M_rsp$builder_body](newBody)[M_rsp$builder_build]()    
+            
+
+            if(!isPlaintext(rspByteString)){
+                console.log("|"+"<-- END HTTP (binary body omitted)");
+            }
+            if (contentLength != 0) {
+                try {
+                    var content = readBufferString(rspByteString, charset)
+                    console.log(splitLine(content,"|   "))
+                } catch (error) {
+                    console.log(splitLine("Base64["+rspByteString.base64()+"]","|   "))
+                }
+                
+                console.log("| ");
+            }
+            console.log("|"+"<-- END HTTP");
         }
-        console.log("|"+"<-- END HTTP");
-    }
+    } catch (error) {
+        if(null == newResponse){
+            return response;
+        }
+    }    
     return newResponse;
 }
 
@@ -370,7 +381,8 @@ function alreadyHook(str){
  */
 function filterUrl(url){
     for(var i=0;i<filterArray.length;i++){
-        if(url.indexOf(filterArray[i])){
+        if(url.indexOf(filterArray[i]) != -1){
+            console.log(url+" ?? "+filterArray[i])
             return true;
         }
     }
@@ -531,6 +543,7 @@ function hookRealCall(realCallClassName){
 }
 
 setImmediate(findPokerEnter)
+
 
 
 
