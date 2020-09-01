@@ -27,6 +27,7 @@ History index[5] >> Request{method=POST, url=https://www.i****.com/api3/getads, 
 		
 	
 > 如果项目被混淆，那么可以使用okhttp_find.js打印出okhttp被混淆后的关键函数名称，然后替换已声明的内容即可。
+> 被混淆后的apk，有可能个别字段不正确，手动寻找后替换一下。
 
 > 例：`frida -U com.example.demo -l okhttp_find.js`
 
