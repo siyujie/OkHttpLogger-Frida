@@ -1,6 +1,6 @@
 /**
 使用说明
-首先将 okhttpfind.dex 拷贝到 /mnt/sdcard/ 目录下，然后给目标App授予存储权限；
+首先将 okhttpfind.dex 拷贝到 /data/local/tmp/ 目录下，然后给目标App授予存储权限；
 例：frida -U -l okhttp_poker.js -f com.example.demo --no-pause
 接下来使用okhttp的所有请求将被拦截并打印出来；
 扩展函数：
