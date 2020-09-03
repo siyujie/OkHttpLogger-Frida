@@ -5,21 +5,21 @@ Frida 实现拦截okhttp的脚本
 
 ### 使用说明
 
-> 首先将 `okhttpfind.dex` 拷贝到 `/data/local/tmp/` 目录下，然后给目标App授予存储权限。
+> ①  首先将 `okhttpfind.dex` 拷贝到 `/data/local/tmp/` 目录下，然后给目标App授予存储权限。
 
-例：`frida -U -l okhttp_poker.js -f com.example.demo --no-pause`
+执行命令启动`frida -U -l okhttp_poker.js -f com.example.demo --no-pause`
 
+> ②  调用函数开始执行
 
-#### 扩展函数：
-扩展函数：
-	`find()`                                         寻找okhttp3关键类及函数	
-	`switchLoader(\"okhttp3.OkHttpClient\")`         参数：静态分析到的okhttpclient类名
-	`hold()`                                         开启HOOK拦截
-	`history()`                                      打印可重新发送的请求				
-	`resend(index)`                                  重新发送请求		
-	
-> 调用函数开始执行
-		
+#### 函数：
+```
+  `find()`                                         寻找okhttp3关键类及函数	
+  `switchLoader(\"okhttp3.OkHttpClient\")`         参数：静态分析到的okhttpclient类名
+  `hold()`                                         开启HOOK拦截
+  `history()`                                      打印可重新发送的请求
+  `resend(index)`                                  重新发送请求
+```
+
 ```
 History Size : 6
 History index[0] >> Request{method=POST, url=https://www.****.com/api3/getads, tags={class retrofit2.O0000Oo0=cn.com.open.****.component.advertise.core.O00000Oo.O000000o() [jinzhiwei, 0]}}
@@ -178,3 +178,7 @@ var M_source_request = "request";
 
 ~~~~~~~~~~~~~~~~Find Complete!~~~~~~~~~~~~~~~~~~~~~~
 ```
+
+
+
+
