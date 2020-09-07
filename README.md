@@ -5,41 +5,20 @@ Frida 实现拦截okhttp的脚本
 
 ### 使用说明
 
-> 首先将 `okhttpfind.dex` 拷贝到 `/data/local/tmp/` 目录下，然后给目标App授予存储权限。
+> ①  首先将 `okhttpfind.dex` 拷贝到 `/data/local/tmp/` 目录下，然后给目标App授予存储权限。
 
-例：`frida -U -l okhttp_poker.js -f com.example.demo --no-pause`
+执行命令启动`frida -U -l okhttp_poker.js -f com.example.demo --no-pause`
 
+> ②  调用函数开始执行
 
-#### 扩展函数：
-扩展函数：
-	`find()`                                         寻找okhttp3关键类及函数	
-	`switchLoader(\"okhttp3.OkHttpClient\")`         参数：静态分析到的okhttpclient类名
-	`hold()`                                         开启HOOK拦截
-	`history()`                                      打印可重新发送的请求				
-	`resend(index)`                                  重新发送请求		
-	
-> 调用函数开始执行
-		
+#### 函数：
 ```
-History Size : 6
-History index[0] >> Request{method=POST, url=https://www.****.com/api3/getads, tags={class retrofit2.O0000Oo0=cn.com.open.****.component.advertise.core.O00000Oo.O000000o() [jinzhiwei, 0]}}
-History index[1] >> Request{method=POST, url=https://www.i****.com/api3/getads, tags={class retrofit2.O0000Oo0=cn.com.open.****.component.advertise.core.O00000Oo.O000000o() [classtop, 0]}}
-History index[2] >> Request{method=GET, url=http://img.mukewang.com/5f4cadb80964527d03280188.png, tags={}}
-History index[3] >> Request{method=POST, url=https://www.i****.com/api3/payarticlelist, tags={class retrofit2.O0000Oo0=O00o0OoO.O000000o() [0, 0]}}
-History index[4] >> Request{method=POST, url=https://www.i****.com/api3/payarticlefilter, tags={class retrofit2.O0000Oo0=O00o0OoO.O000000o() []}}
-History index[5] >> Request{method=POST, url=https://www.i****.com/api3/getads, tags={class retrofit2.O0000Oo0=cn.com.open.****.component.advertise.core.O00000Oo.O000000o() [columntop, 0]}}
+  `find()`                                         寻找okhttp3关键类及函数	
+  `switchLoader(\"okhttp3.OkHttpClient\")`         参数：静态分析到的okhttpclient类名
+  `hold()`                                         开启HOOK拦截
+  `history()`                                      打印可重新发送的请求
+  `resend(index)`                                  重新发送请求
 ```
-- `resend(index)`   重新发送请求 例子： `resend(0)` 重新发送第一个请求
-
-		
-	
-> 如果项目被混淆，那么可以使用okhttp_find.js打印出okhttp被混淆后的关键函数名称，然后替换已声明的内容即可。
-> 被混淆后的apk，有可能个别字段不正确，手动寻找后替换一下。
-
-> 例：`frida -U com.example.demo -l okhttp_find.js`
-
-#### 备注 ：
-`okhtpfind.dex` 内包含了 更改了包名的`okio`以及`Gson`，以及`Java`写的寻找`okhttp`特征的代码。
 
 #### 原理：
 由于所有使用的`okhttp`框架的App发出的请求都是通过`RealCall.java`发出的，那么我们可以hook此类拿到`request`和`response`,
@@ -178,3 +157,5 @@ var M_source_request = "request";
 
 ~~~~~~~~~~~~~~~~Find Complete!~~~~~~~~~~~~~~~~~~~~~~
 ```
+
+#### 详情见动图吧！
