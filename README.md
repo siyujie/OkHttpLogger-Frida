@@ -1,6 +1,6 @@
 # OkHttpLogger-Frida
-Frida 实现拦截okhttp的脚本
-放弃`okhttp_cat.js`
+- Frida 实现拦截okhttp的脚本
+
 
 ### 使用说明
 
@@ -148,6 +148,7 @@ var M_rsp_newBuilder = "بﺙذن";
 ```
 
 #### 详情见动图吧！如有问题，请 issues
+- 因为`okhttp_poker.js`覆盖了`okhttp_cat.js`的所有功能，所以放弃了`okhttp_cat.js`
 
 #### 免责声明
 - 仅做学习交流! 请勿商用!!
