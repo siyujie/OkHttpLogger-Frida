@@ -22,6 +22,8 @@ Frida 实现拦截okhttp的脚本
 #### 原理：
 由于所有使用的`okhttp`框架的App发出的请求都是通过`RealCall.java`发出的，那么我们可以hook此类拿到`request`和`response`,
 也可以缓存下来每一个请求的`call`对象，进行再次请求，所以选择了此处进行hook。
+`find`前新增`check`，根据特征类寻找是否使用了`okhttp3`库，如果没有特征类，则说明没有使用`okhttp`;
+找到特征类，说明使用了`okhttp`的库，并打印出是否被混淆。
 
 #### 抓取打印的样例
 
@@ -102,60 +104,47 @@ Frida 实现拦截okhttp的脚本
 
 ```
  
-~~~~~~~~~~~~~~~Start Find~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 被 混 淆 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-var Cls_Call = "okhttp3.O00000oO";
-var Cls_CallBack = "okhttp3.O00000oo";
-var Cls_Interceptor = "okhttp3.O0000oOo";
-var Cls_OkHttpClient = "okhttp3.O0000ooO";
-var Cls_OkHttpClient$Builder = "okhttp3.O0000ooO$O00000Oo";
-var Cls_Request = "okhttp3.O00oOooO";
-var Cls_Response = "okhttp3.O000O00o";
-var Cls_ResponseBody = "okhttp3.O000O0OO";
-var Cls_okio_Buffer = "okio.O00000o0";
-var F_Builder_interceptors = "O00000oO";
-var F_Client_interceptors = "O0000Oo";
-var M_Builder_build = "O000000o";
-var M_CallBack_onResponse = "O000000o";
-var M_Call_enqueue = "O000000o";
-var M_Call_execute = "execute";
-var M_Call_request = "O0000oO";
-var M_Client_newCall = "O000000o";
-var M_Interceptor_intercept = "intercept";
-var M_buffer_readByteArray = "O0000ooO";
-var M_chain_connection = "O00000o0";
-var M_chain_proceed = "O000000o";
-var M_chain_request = "O0000oO";
-var M_connection_protocol = "O000000o";
-var M_contentType_charset = "O000000o";
-var M_header_get = "O000000o";
-var M_header_name = "O000000o";
-var M_header_size = "O00000Oo";
-var M_header_value = "O00000Oo";
-var M_req_body = "O000000o";
-var M_req_headers = "O00000o0";
-var M_req_method = "O00000oO";
-var M_req_newBuilder = "O00000oo";
-var M_req_url = "O0000OOo";
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Start Find~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Find Result~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+var Cls_Call = "فمضﺝ.ثيغه";
+var Cls_CallBack = "فمضﺝ.ﺙلﺩج";
+var Cls_OkHttpClient = "فمضﺝ.ﻙﺫتك";
+var Cls_Request = "فمضﺝ.ﺵكـﻅ";
+var Cls_Response = "فمضﺝ.صرفج";
+var Cls_ResponseBody = "فمضﺝ.ضتﻭذ";
+var Cls_okio_Buffer = "ﻭﻍﺫﻉ.ﺵﺱﻭع";
+var F_header_namesAndValues = "ﻝبـق";
+var F_req_body = "ﺵﺱﻭع";
+var F_req_headers = "بﺙذن";
+var F_req_method = "ﺯﺵتﻝ";
+var F_req_url = "ﻝبـق";
+var F_rsp$builder_body = "ﻝجﻭق";
+var F_rsp_body = "ﺹﻅﻍز";
+var F_rsp_code = "ﻝجﻭق";
+var F_rsp_headers = "غﻝزث";
+var F_rsp_message = "فمضﺝ";
+var F_rsp_request = "ثيغه";
+var M_CallBack_onResponse = "onResponse";
+var M_Call_enqueue = "ﻝبـق";
+var M_Call_execute = "wait";
+var M_Call_request = "";
+var M_Client_newCall = "ﻝبـق";
+var M_buffer_readByteArray = "ﺹﻅﻍز";
+var M_contentType_charset = "ﻝبـق";
 var M_reqbody_contentLength = "contentLength";
 var M_reqbody_contentType = "contentType";
 var M_reqbody_writeTo = "writeTo";
-var M_rsp$builder_body = "O000000o";
-var M_rsp$builder_build = "O000000o";
+var M_rsp$builder_build = "ﻝبـق";
 var M_rspBody_contentLength = "contentLength";
 var M_rspBody_contentType = "contentType";
 var M_rspBody_create = "create";
 var M_rspBody_source = "source";
-var M_rspBody_string = "string";
-var M_rsp_body = "O000000o";
-var M_rsp_code = "O00000o0";
-var M_rsp_headers = "O00000oO";
-var M_rsp_message = "O0000O0o";
-var M_rsp_newBuilder = "O0000Oo0";
-var M_rsp_request = "O0000o00";
-var M_source_request = "request";
+var M_rsp_newBuilder = "بﺙذن";
 
-~~~~~~~~~~~~~~~~Find Complete!~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Find Complete!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
 #### 详情见动图吧！如有问题，请 issues
@@ -164,3 +153,5 @@ var M_source_request = "request";
 - 仅做学习交流! 请勿商用!!
 - 若因使用本服务与相关软件官方造成不必要的纠纷，本人概不负责!
 - 本人纯粹技术爱好，若侵相关公司的权益，请告知删除!
+#### 特别感谢
+- https://github.com/r0ysue/AndroidSecurityStudy
