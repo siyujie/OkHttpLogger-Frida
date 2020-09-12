@@ -1,6 +1,6 @@
 # OkHttpLogger-Frida
 Frida 实现拦截okhttp的脚本
-
+放弃`okhttp_cat.js`
 
 ### 使用说明
 
