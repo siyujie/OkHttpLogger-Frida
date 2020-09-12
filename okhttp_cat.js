@@ -1,4 +1,8 @@
 /*
+
+放弃维护了
+
+
  此实现是通过添加Interceptor的方法进行的打印okhttp日志，
  动态代理创建Interceptor的实现类对象，添加到OkhttpClient的interceptors中
  主要实现过程和之前写的Xposed实现的okhttp的Interceptor同一流程
@@ -6,7 +10,7 @@
     https://github.com/siyujie/OkHttpLoggerInterceptor-hook
  
 */
-
+/*
 var Cls_OkHttpClient = "okhttp3.OkHttpClient";
 var F_Client_interceptors = "interceptors";
 var Cls_OkHttpClient$Builder = "okhttp3.OkHttpClient$Builder";
@@ -481,3 +485,4 @@ function hookbyuse(){
 
 // setImmediate(hookbychoose)
 setImmediate(hookbyuse)
+*/

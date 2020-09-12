@@ -22,89 +22,62 @@
 */
 var Cls_Call = "okhttp3.Call";
 var Cls_CallBack = "okhttp3.Callback";
-var Cls_Interceptor = "okhttp3.Interceptor";
 var Cls_OkHttpClient = "okhttp3.OkHttpClient";
-var Cls_OkHttpClient$Builder = "okhttp3.OkHttpClient$Builder";
 var Cls_Request = "okhttp3.Request";
 var Cls_Response = "okhttp3.Response";
 var Cls_ResponseBody = "okhttp3.ResponseBody";
 var Cls_okio_Buffer = "okio.Buffer";
-var F_Builder_interceptors = "interceptors";
-var F_Client_interceptors = "interceptors";
-var M_Builder_build = "build";
+var F_header_namesAndValues = "namesAndValues";
+var F_req_body = "body";
+var F_req_headers = "headers";
+var F_req_method = "method";
+var F_req_url = "url";
+var F_rsp$builder_body = "body";
+var F_rsp_body = "body";
+var F_rsp_code = "code";
+var F_rsp_headers = "headers";
+var F_rsp_message = "message";
+var F_rsp_request = "request";
 var M_CallBack_onResponse = "onResponse";
-var M_Call_clone = "clone";
 var M_Call_enqueue = "enqueue";
 var M_Call_execute = "execute";
 var M_Call_request = "request";
 var M_Client_newCall = "newCall";
-var M_Interceptor_intercept = "intercept";
 var M_buffer_readByteArray = "readByteArray";
-var M_chain_connection = "connection";
-var M_chain_proceed = "proceed";
-var M_chain_request = "request";
-var M_connection_protocol = "protocol";
 var M_contentType_charset = "charset";
-var M_header_get = "get";
-var M_header_name = "name";
-var M_header_size = "size";
-var M_header_value = "value";
-var M_req_body = "body";
-var M_req_headers = "headers";
-var M_req_method = "method";
-var M_req_newBuilder = "newBuilder";
-var M_req_url = "url";
 var M_reqbody_contentLength = "contentLength";
 var M_reqbody_contentType = "contentType";
 var M_reqbody_writeTo = "writeTo";
-var M_rsp$builder_body = "body";
 var M_rsp$builder_build = "build";
 var M_rspBody_contentLength = "contentLength";
 var M_rspBody_contentType = "contentType";
 var M_rspBody_create = "create";
 var M_rspBody_source = "source";
-var M_rspBody_string = "string";
-var M_rsp_body = "body";
-var M_rsp_code = "code";
-var M_rsp_headers = "headers";
-var M_rsp_message = "message";
 var M_rsp_newBuilder = "newBuilder";
-var M_rsp_request = "request";
-var M_source_request = "request";
-
-//----------------------------------
-/**
- *  okhttp & okio 包名
- *  如果包名被混淆，请替换此处的包名，以增加find速度与准确性
- */
-var okhttpPackageName = "okhttp3"
-var okioPackageName = "okio"
-
-/**
- *  过滤掉图片的响应打印
- *
- */
-var filterArray = ["jpg", "png", "webp", "jpeg", "gif"]
-
 //----------------------------------
 
 var CallCache = []
-
 var hookedArray = []
+//
+var filterArray = ["jpg", "png", "webp", "jpeg", "gif",".data"]
 
 
 function buildNewResponse(responseObject) {
     var newResponse = null;
     Java.perform(function () {
         try {
+            var logString = Java.use("java.lang.StringBuffer").$new()
 
-            console.log("");
-            console.log("┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
+            logString.append("").append("\n");
+            logString.append("┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────").append("\n");
 
-            newResponse = printAll(responseObject)
+            newResponse = printAll(responseObject, logString)
 
-            console.log("└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
-            console.log("");
+            logString.append("└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────").append("\n");
+            logString.append("").append("\n");
+
+            console.log(logString)
+
         } catch (error) {
             console.log("printAll ERROR : " + error);
         }
@@ -113,67 +86,68 @@ function buildNewResponse(responseObject) {
 }
 
 
-function printAll(responseObject) {
+function printAll(responseObject, logString) {
     try {
-        var request = responseObject[M_rsp_request]()
-        printerRequest(request)
+        var request = getFieldValue(responseObject,F_rsp_request)
+        printerRequest(request, logString)
     } catch (error) {
         console.log("print request error : ", error)
         return responseObject;
     }
-    var newResponse = printerResponse(responseObject)
+    var newResponse = printerResponse(responseObject, logString)
     return newResponse;
 }
 
 
-function printerRequest(request) {
+function printerRequest(request, logString) {
     var javaString = Java.use("java.lang.String")
     var BufferClsss = Java.use(Cls_okio_Buffer)
     var Charset = Java.use("java.nio.charset.Charset")
     var defChatset = Charset.forName("UTF-8")
 
-    var httpUrl = request[M_req_url]()
+    var httpUrl = getFieldValue(request,F_req_url)
 
-    console.log("| URL: " + httpUrl)
-    console.log("|")
-    console.log("| Method: " + request[M_req_method]())
-    console.log("|")
+    logString.append("| URL: " + httpUrl).append("\n")
+    logString.append("|").append("\n")
+    logString.append("| Method: " + getFieldValue(request,F_req_method)).append("\n")
+    logString.append("|").append("\n")
 
-    var requestBody = request[M_req_body]();
+    var requestBody = getFieldValue(request,F_req_body);
     var hasRequestBody = true
     if (null == requestBody) {
         hasRequestBody = false
     }
-    var requestHeaders = request[M_req_headers]()
-    var headersSize = requestHeaders[M_header_size]()
+    var requestHeaders = getFieldValue(request,F_req_headers)
+    var headersSize = getHeaderSize(requestHeaders)
 
-    console.log("| Headers:")
+    logString.append("| Headers:").append("\n")
     if (hasRequestBody) {
+        var requestBody = getWrapper(requestBody)
         var contentType = requestBody[M_reqbody_contentType]()
         if (null != contentType) {
-            console.log("|   ┌─" + "Content-Type: " + contentType)
+            logString.append("|   ┌─" + "Content-Type: " + contentType).append("\n")
         }
         var contentLength = requestBody[M_reqbody_contentLength]()
         if (contentLength != -1) {
             var tag = headersSize == 0 ? "└─" : "┌─"
-            console.log("|   " + tag + "Content-Length: " + contentLength)
+            logString.append("|   " + tag + "Content-Length: " + contentLength).append("\n")
         }
     }
     for (var i = 0; i < headersSize; i++) {
-        var name = requestHeaders[M_header_name](i)
+        var name = getHeaderName(requestHeaders,i)
         if (!javaString.$new("Content-Type").equalsIgnoreCase(name) && !javaString.$new("Content-Length").equalsIgnoreCase(name)) {
-            var value = requestHeaders[M_header_value](i)
+            var value = getHeaderValue(requestHeaders,i)
             var tag = i == (headersSize - 1) ? "└─" : "┌─"
-            console.log("|   " + tag + name + ": " + value)
+            logString.append("|   " + tag + name + ": " + value).append("\n")
         }
     }
-    console.log("|");
+    logString.append("|").append("\n")
     if (!hasRequestBody) {
-        console.log("|" + "--> END ");
+        logString.append("|" + "--> END ").append("\n")
     } else if (bodyEncoded(requestHeaders)) {
-        console.log("|" + "--> END  (encoded body omitted > bodyEncoded)");
+        logString.append("|" + "--> END  (encoded body omitted > bodyEncoded)").append("\n")
     } else {
-        console.log("| Body:")
+        logString.append("| Body:").append("\n")
         var buffer = BufferClsss.$new()
         requestBody[M_reqbody_writeTo](buffer)
         var reqByteString = getByteString(buffer)
@@ -188,56 +162,59 @@ function printerRequest(request) {
             }
         }
         if (isPlaintext(reqByteString)) {
-            console.log(splitLine(readBufferString(reqByteString, charset), "|   "))
-            console.log("|");
-            console.log("|" + "--> END ")
+            logString.append(splitLine(readBufferString(reqByteString, charset), "|   ")).append("\n")
+            logString.append("|").append("\n")
+            logString.append("|" + "--> END ").append("\n")
         } else {
-            console.log(splitLine("Base64[" + reqByteString.base64() + "]", "|   "))
-            console.log("|");
-            console.log("|" + "--> END  (binary body omitted -> isPlaintext)")
+            logString.append(splitLine("Base64[" + reqByteString.base64() + "]", "|   ")).append("\n")
+            logString.append("|").append("\n");
+            logString.append("|" + "--> END  (binary body omitted -> isPlaintext)").append("\n")
         }
     }
-    console.log("|");
+    logString.append("|").append("\n");
 }
 
 
-function printerResponse(response) {
+function printerResponse(response, logString) {
     var newResponse = null;
     try {
         var Charset = Java.use("java.nio.charset.Charset")
         var defChatset = Charset.forName("UTF-8")
 
-        var url = response[M_rsp_request]()[M_req_url]()
-
+        var request = getFieldValue(response,F_rsp_request)
+        var url = getFieldValue(request,F_req_url)
         var shielded = filterUrl(url.toString())
         if (shielded) {
             return response;
         }
 
-        console.log("| URL: " + url)
-        console.log("|")
-        console.log("| Status Code: " + response[M_rsp_code]() + " / " + response[M_rsp_message]())
-        console.log("|")
-        var responseBody = response[M_rsp_body]()
+        logString.append("| URL: " + url).append("\n")
+        logString.append("|").append("\n")
+        logString.append("| Status Code: " + getFieldValue(response,F_rsp_code) + " / " + getFieldValue(response,F_rsp_message)).append("\n")
+        logString.append("|").append("\n")
+        var responseBody = getFieldValue(response,F_rsp_body)
         var contentLength = responseBody[M_rspBody_contentLength]()
-        var resp_headers = response[M_rsp_headers]()
-        var respHeaderSize = resp_headers[M_header_size]()
-        console.log("| Headers:")
+        var resp_headers = getFieldValue(response,F_rsp_headers)
+        var respHeaderSize = getHeaderSize(resp_headers)
+        logString.append("| Headers:").append("\n")
+        if(respHeaderSize == 0){
+            logString.append("|     no headers").append("\n")
+        }
         for (var i = 0; i < respHeaderSize; i++) {
             var tag = i == (respHeaderSize - 1) ? "└─" : "┌─"
-            console.log("|   " + tag + resp_headers[M_header_name](i) + ": " + resp_headers[M_header_value](i))
+            logString.append("|   " + tag + getHeaderName(resp_headers,i) + ": " + getHeaderValue(resp_headers,i)).append("\n")
         }
 
         var content = "";
         var nobody = !hasBody(response)
         if (nobody) {
-            console.log("| No Body : ", response)
-            console.log("|" + "<-- END HTTP")
+            logString.append("| No Body : "+ response).append("\n")
+            logString.append("|" + "<-- END HTTP").append("\n")
         } else if (bodyEncoded(resp_headers)) {
-            console.log("|" + "<-- END HTTP (encoded body omitted)")
+            logString.append("|" + "<-- END HTTP (encoded body omitted)").append("\n")
         } else {
-            console.log("| ");
-            console.log("| Body:")
+            logString.append("| ").append("\n");
+            logString.append("| Body:").append("\n")
             var source = responseBody[M_rspBody_source]()
             var rspByteString = getByteString(source)
             var charset = defChatset
@@ -252,26 +229,29 @@ function printerResponse(response) {
             var class_responseBody = Java.use(Cls_ResponseBody)
             var newBody = class_responseBody[M_rspBody_create](mediaType, rspByteString.toByteArray())
             var newBuilder = response[M_rsp_newBuilder]()
-            newResponse = newBuilder[M_rsp$builder_body](newBody)[M_rsp$builder_build]()
+            var bodyField = newBuilder.class.getDeclaredField(F_rsp$builder_body)
+            bodyField.setAccessible(true)
+            bodyField.set(newBuilder,newBody)
+            newResponse = newBuilder[M_rsp$builder_build]()
 
 
             if (!isPlaintext(rspByteString)) {
-                console.log("|" + "<-- END HTTP (binary body omitted)");
+                logString.append("|" + "<-- END HTTP (binary body omitted)").append("\n");
             }
             if (contentLength != 0) {
                 try {
                     var content = readBufferString(rspByteString, charset)
-                    console.log(splitLine(content, "|   "))
+                    logString.append(splitLine(content, "|   ")).append("\n")
                 } catch (error) {
-                    console.log(splitLine("Base64[" + rspByteString.base64() + "]", "|   "))
+                    logString.append(splitLine("Base64[" + rspByteString.base64() + "]", "|   ")).append("\n")
                 }
 
-                console.log("| ");
+                logString.append("| ").append("\n");
             }
-            console.log("|" + "<-- END HTTP");
+            logString.append("|" + "<-- END HTTP").append("\n");
         }
     } catch (error) {
-        console.log("print response error : ", error)
+        logString.append("print response error : "+ error).append("\n")
         if (null == newResponse) {
             return response;
         }
@@ -280,10 +260,69 @@ function printerResponse(response) {
 }
 
 
+function getFieldValue(object,fieldName){
+    var field = object.class.getDeclaredField(fieldName);
+    field.setAccessible(true)
+    var fieldValue = field.get(object)
+    if(null == fieldValue){
+        return null;
+    }
+    return Java.cast(fieldValue,Java.use(fieldValue.$className))
+}
+
+
+function getWrapper(object){
+    var chooseInstance = null;
+    Java.choose(object.getClass().getName(),{
+
+        onMatch:function(instance){
+            if(object.equals(instance)){
+                chooseInstance = instance;
+            }
+        },
+        onComplete : function(){
+        }
+    })
+    return chooseInstance
+}
+
+
+function getHeaderSize(headers){
+    return getFieldValue(headers,F_header_namesAndValues).length / 2
+}
+
+function getHeaderName(headers,index){
+    return getFieldValue(headers,F_header_namesAndValues)[index * 2]
+}
+function getHeaderValue(headers,index){
+    return getFieldValue(headers,F_header_namesAndValues)[(index * 2)+1]
+}
+
+function getByHeader(headers,name){
+    Java.perform(function(){
+        var JavaString = Java.use("java.lang.String")
+        var GSON = Java.use("com.singleman.gson.Gson").$new()
+        var List = Java.use("java.util.List")
+        var namesAndValues = getFieldValue(headers,F_header_namesAndValues)
+        var namesAndValuesList = Java.cast(GSON.fromJson(GSON.toJson(namesAndValues),List.class),List)
+        var length = namesAndValuesList.size()
+        do {
+            length -= 2;
+            if (length < 0) {
+                return null;
+            }
+        } while (!JavaString.$new(name).equalsIgnoreCase(namesAndValuesList.get(length)));
+        return namesAndValuesList.get(length+1);
+    
+    })
+}
+
+
+
 function bodyEncoded(headers) {
     if (null == headers) return false;
     var javaString = Java.use("java.lang.String")
-    var contentEncoding = headers[M_header_get]("Content-Encoding")
+    var contentEncoding = getByHeader(headers,"Content-Encoding")
     return contentEncoding != null && !javaString.$new("identity").equalsIgnoreCase(contentEncoding)
 
 }
@@ -291,20 +330,21 @@ function bodyEncoded(headers) {
 
 function hasBody(response) {
     var javaString = Java.use("java.lang.String")
-    var m = response[M_rsp_request]()[M_req_method]();
+    var request = getFieldValue(response,F_rsp_request)
+    var m = getFieldValue(request,F_req_method);
     if (javaString.$new("HEAD").equals(m)) {
         return false;
     }
     var Transfer_Encoding = "";
-    var resp_headers = response[M_rsp_headers]()
-    var respHeaderSize = resp_headers[M_header_size]()
+    var resp_headers = getFieldValue(response,F_rsp_headers)
+    var respHeaderSize = getHeaderSize(resp_headers)
     for (var i = 0; i < respHeaderSize; i++) {
-        if (javaString.$new("Transfer-Encoding").equals(resp_headers[M_header_name](i))) {
-            Transfer_Encoding = resp_headers[M_header_value](i);
+        if (javaString.$new("Transfer-Encoding").equals( getHeaderName(resp_headers,i))) {
+            Transfer_Encoding = getHeaderValue(resp_headers,i);
             break
         }
     }
-    var code = response[M_rsp_code]()
+    var code = getFieldValue(response,F_rsp_code)
     if (((code >= 100 && code < 200) || code == 204 || code == 304)
         && response[M_rspBody_contentLength] == -1
         && !javaString.$new("chunked").equalsIgnoreCase(Transfer_Encoding)
@@ -398,7 +438,7 @@ function alreadyHook(str) {
 function filterUrl(url) {
     for (var i = 0; i < filterArray.length; i++) {
         if (url.indexOf(filterArray[i]) != -1) {
-            console.log(url + " ?? " + filterArray[i])
+            // console.log(url + " ?? " + filterArray[i])
             return true;
         }
     }
@@ -418,7 +458,7 @@ function hookRealCall(realCallClassName) {
                 var realCallBackClassName = callback.$className
                 Java.use(realCallBackClassName)[M_CallBack_onResponse].overload(Cls_Call, Cls_Response).implementation = function (call, response) {
 
-                    console.log("-------------------------------------HOOK SUCCESS 异步--------------------------------------------------")
+                    // console.log("-------------------------------------HOOK SUCCESS 异步--------------------------------------------------")
                     var newResponse = buildNewResponse(response)
 
                     this[M_CallBack_onResponse](call, newResponse)
@@ -432,7 +472,7 @@ function hookRealCall(realCallClassName) {
         //同步  
         RealCall[M_Call_execute].overload().implementation = function () {
 
-            console.log("-------------------------------------HOOK SUCCESS 同步--------------------------------------------------")
+            // console.log("-------------------------------------HOOK SUCCESS 同步--------------------------------------------------")
 
             var response = this[M_Call_execute]()
 
@@ -442,6 +482,29 @@ function hookRealCall(realCallClassName) {
         }
     })
 
+}
+
+/**
+ * check className & filter
+ */
+function checkClass(name) {
+    if (name.startsWith("com.")
+        || name.startsWith("cn.")
+        || name.startsWith("io.")
+        || name.startsWith("org.")
+        || name.startsWith("android")
+        || name.startsWith("kotlin")
+        || name.startsWith("[")
+        || name.startsWith("java")
+        || name.startsWith("sun.")
+        || name.startsWith("net.")
+        || name.indexOf(".") < 0
+        || name.startsWith("dalvik")
+
+    ) {
+        return false;
+    }
+    return true;
 }
 
 
@@ -456,10 +519,11 @@ function history() {
             for (var i = 0; i < CallCache.length; i++) {
                 var call = CallCache[i]
                 if ("" != M_Call_request) {
-                    console.log("History index[" + i + "]" + " >> " + call[M_Call_request]())
+                    console.log("-----> index[" + i + "]" + " >> " + call[M_Call_request]())
                 } else {
-                    console.log("History index[" + i + "]" + "    ????  M_Call_execute = \"\"")
+                    console.log("-----> index[" + i + "]" + "    ????  M_Call_execute = \"\"")
                 }
+                console.log("")
 
             }
             console.log("")
@@ -496,7 +560,7 @@ function resend(index) {
 
 
 /**
- * start hook 
+ * 开启HOOK拦截
  */
 function hold() {
     Java.perform(function () {
@@ -510,7 +574,7 @@ function hold() {
             var call = this[M_Client_newCall](request)
 
             try {
-                CallCache.push(call[M_Call_clone]())
+                CallCache.push(call["clone"]())
             } catch (error) {
                 console.log("not fount clone method!")
             }
@@ -528,9 +592,6 @@ function hold() {
     })
 }
 
-/**
- * switch classloader
- */
 function switchLoader(clientName) {
     Java.perform(function () {
 
@@ -578,44 +639,92 @@ function switchLoader(clientName) {
 }
 
 
-
 /**
  * find & print used location
  */
 function find() {
     Java.perform(function () {
-        var ok_loadedClazzList = Java.use("java.util.ArrayList").$new()
-        var okio_loadedClazzList = Java.use("java.util.ArrayList").$new()
+        var isSupport = false;
+
+        try {
+            var Arrays = Java.use("java.util.Arrays")
+            var clz_Protocol = null;
+            var clazzNameList = Java.enumerateLoadedClassesSync()
+            for (var i = 0; i < clazzNameList.length; i++) {
+                var name = clazzNameList[i]
+                if (!checkClass(name)) {
+                    continue
+                }
+                try {
+                    var loadedClazz = Java.classFactory.loader.loadClass(name);
+                    if(loadedClazz.isEnum()){
+                        var Protocol = Java.use(name);
+                        var toString = Arrays.toString(Protocol.values());
+                        if(toString.indexOf("http/1.0")!=-1 
+                            && toString.indexOf("http/1.1") != -1
+                            && toString.indexOf("spdy/3.1") != -1
+                            && toString.indexOf("h2") != -1
+                        ){
+                            clz_Protocol = loadedClazz;
+                            break;
+                        }
+                    }
+                } catch (error) {
+                }
+            }
+            if(null == clz_Protocol){
+				console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Not Support[没有找到okhttp特征类]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                return
+            }
+          
+            //enum values >> Not to be confused with!
+            var okhttp_pn = clz_Protocol.getPackage().getName();
+            var likelyOkHttpClient = okhttp_pn + ".OkHttpClient"
+            try {
+                var clz_okclient = Java.use(likelyOkHttpClient).class
+                if (null != clz_okclient) {
+                    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 未 混 淆 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                    isSupport = true;
+                }
+            } catch (error) {
+                console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 被 混 淆 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                isSupport = true;
+            }
+
+        } catch (error) {
+            console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~未使用okhttp~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            isSupport = false;
+        }
+
+        if(!isSupport){
+			console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Not Support[没有找到okhttp特征类]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            return
+        }
+
+        var likelyClazzList = Java.use("java.util.ArrayList").$new()
 
         console.log("")
         console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Start Find~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
-        Java.enumerateLoadedClasses({
-            onMatch: function (name, hanlde) {
-                if (name.indexOf(okhttpPackageName) == 0) {
-                    console.log(name)
-                    var loadedClazz = Java.use(name).class
-                    ok_loadedClazzList.add(loadedClazz)
-                } else if (name.indexOf(okioPackageName) == 0) {
-                    console.log(name)
-                    var loadedClazz = Java.use(name).class
-                    okio_loadedClazzList.add(loadedClazz)
-                }
-
-            }, onComplete: function () {
-                console.log(" ")
-                console.log("enum loaded classes Complete ! ")
-                console.log(" ")
+        for (var i = 0; i < clazzNameList.length; i++) {
+            var name = clazzNameList[i]
+            if (!checkClass(name)) {
+                continue
             }
-        })
+            try {
+                var loadedClazz = Java.classFactory.loader.loadClass(name);
+                likelyClazzList.add(loadedClazz)
+            } catch (error) {
+            }
+        }
+
 
         Java.openClassFile("/data/local/tmp/okhttpfind.dex").load()
 
         Java.use("com.singleman.okhttp.OKLog").debugLog.implementation = function (message) {
             if (message.indexOf("Start Find") != -1) {
                 console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Find Result~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-            }
-            if (message.indexOf("Find Complete") != -1) {
+            }else if (message.indexOf("Find Complete") != -1) {
                 var OkCompatClazz = Java.use("com.singleman.okhttp.OkCompat").class
                 var fields = OkCompatClazz.getDeclaredFields();
                 for (var i = 0; i < fields.length; i++) {
@@ -628,9 +737,10 @@ function find() {
                 }
 
                 console.log("")
-                console.log("   !!!!!!!!!   Please check whether [M_rsp_headers] is \"trailers\"   !!!!!!!!!    ")
                 console.log("")
                 console.log(message)
+            }else{
+                // console.log(message)
             }
         }
 
@@ -638,16 +748,12 @@ function find() {
             console.log(Java.use("android.util.Log").getStackTraceString(ex))
         }
 
-        var OkHttpPrinter = Java.use("com.singleman.okhttp.OkHttpFinder")
+        var OkHttpFinder = Java.use("com.singleman.okhttp.OkHttpFinder")
 
-        OkHttpPrinter.getInstance().findClassInit(ok_loadedClazzList, okio_loadedClazzList)
-
+        OkHttpFinder.getInstance().findClassInit(likelyClazzList)
     })
 
 }
-
-
-
 /**
  * 
  */
@@ -656,7 +762,7 @@ function main() {
         console.log("");
         console.log("------------------------- OkHttp Poker by SingleMan ------------------------------------");
         console.log("API:")
-        console.log("   >>>  find()                                         寻找okhttp3关键类及函数");
+        console.log("   >>>  find()                                         检查是否使用了Okhttp & 是否可能被混淆 & 寻找okhttp3关键类及函数");
         console.log("   >>>  switchLoader(\"okhttp3.OkHttpClient\")           参数：静态分析到的okhttpclient类名");
         console.log("   >>>  hold()                                         开启HOOK拦截");
         console.log("   >>>  history()                                      打印可重新发送的请求");
@@ -668,6 +774,13 @@ function main() {
 
 
 setImmediate(main)
+
+
+
+
+
+
+
 
 
 

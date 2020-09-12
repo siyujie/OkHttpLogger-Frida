@@ -23,7 +23,7 @@
     }
 
     function splitLine(string, tag) {
-        var lineLength = 200;
+        var lineLength = 150;
         var newSB = Java.use("java.lang.StringBuilder").$new()
         var newString = Java.use("java.lang.String").$new(string)
         var lineNum = Math.ceil(newString.length() / lineLength)
@@ -58,6 +58,7 @@
 
             Java.use(HttpOnly)[HttpOnlyMethod].overload().implementation = function () {
                 var response = this[HttpOnlyMethod]()
+                var logString = Java.use("java.lang.StringBuffer").$new()
                 //Request
                 try {
                     var requestField = null
@@ -72,17 +73,19 @@
                     }
                     var request = Java.cast(requestField.get(this),Java.use(HttpRequestClassName))
                     var url = request["getUrl"]()
-                    console.log("");
-                    console.log("┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
+
+                    logString.append("").append("\n")
+                    logString.append("┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────").append("\n").append("\n")
 
                     //URL
-                    console.log("| URL")
-                    console.log(splitLine(url, "|    "))
+                    logString.append("| URL").append("\n")
+                    logString.append(splitLine(url, "|    ")).append("\n")
 
                     if(filterUrl(url)){
-                        console.log("|  ","Is File")
-                        console.log("└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
-                        console.log("");  
+                        logString.append("|  "+"Is File").append("\n")
+                        logString.append("└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────").append("\n").append("\n")
+                        logString.append("").append("\n").append("\n")
+                        console.log(logString)
                         return response; 
                     }
                     //
@@ -94,14 +97,14 @@
                         var baseJsonObj = jsonObject.getJSONObject("base")
                         var httpMethod = baseJsonObj.getString("method")
                         var originUrl = baseJsonObj.getString("origin_url")
-                        console.log("|  " ,"");
-                        console.log("| " ,"Method : ", httpMethod, "  originUrl : ", originUrl)
+                        logString.append("|  ").append("\n")
+                        logString.append("| " + "Method : " + httpMethod + "  originUrl : " + originUrl).append("\n")
                     }
         
                     //Request Headers
                     var requestHeadersString = extraInfo.getClass().getField("requestHeaders").get(extraInfo)
-                    console.log("|  " ,"");
-                    console.log("| ","Request Headers")
+                    logString.append("|  ").append("\n")
+                    logString.append("| " + "Request Headers").append("\n")
                     // console.log(splitLine(requestHeadersString, "|    "))
                     var requestHeaderMapObj = gson.fromJson(requestHeadersString,JavaMap.class)
                     var requestHeaderMap = Java.cast(requestHeaderMapObj,JavaLinkedTreeMap)
@@ -109,14 +112,14 @@
                     for(var i = 0;i<keyArray.length;i++){
                         var key = keyArray[i]
                         var value = requestHeaderMap.get(key)
-                        console.log("|    ",key+":"+value)
+                        logString.append("|    " + key+":"+value).append("\n")
                     }
 
                     //Request Bodys
                     var requestBody = request["getBody"]()
                     if(null != requestBody){
-                        console.log("|  " ,"");
-                        console.log("| " ,"Request Body");
+                        logString.append("|  ").append("\n")
+                        logString.append("| " + "Request Body").append("\n")
                         var byteArrayOutputStream = ByteArrayOutputStream.$new()
                         requestBody["writeTo"](byteArrayOutputStream)
                         var bodyString = "";
@@ -126,21 +129,21 @@
                         } catch (error) {
                             bodyString = "Base64["+bodyByteString.base64()+"]"
                         }
-                        console.log(splitLine(bodyString ,"|    "))
+                        logString.append(splitLine(bodyString ,"|    ")).append("\n")
                     }
                     //Response
                     //Response Code & Message
                     var code = response["getStatus"]()
                     var reason = response["getReason"]()
-                    console.log("|  " ,"");
-                    console.log("|  " ,"");
-                    console.log("| " ,"code : ", code, "/ reason : ", reason)
+                    logString.append("|  ").append("\n")
+                    logString.append("|  " ).append("\n")
+                    logString.append("| " + "code : " + code +  "/ reason : " + reason).append("\n")
         
         
                     //Response Headers
                     var responseHeadersString = extraInfo.getClass().getField("responseHeaders").get(extraInfo)
-                    console.log("|  " ,"");
-                    console.log("| ","Response Headers")
+                    logString.append("|  ").append("\n")
+                    logString.append("| " + "Response Headers").append("\n")
                     // console.log(splitLine(responseHeadersString, "|    "))
                     var responseHeaderMapObj = gson.fromJson(responseHeadersString,JavaMap.class)
                     var responseHeaderMap = Java.cast(responseHeaderMapObj,JavaLinkedTreeMap)
@@ -148,15 +151,15 @@
                     for(var i = 0;i<keyArray.length;i++){
                         var key = keyArray[i]
                         var value = responseHeaderMap.get(key)
-                        console.log("|    ",key+":"+value)
+                        logString.append("|    " + key+":"+value).append("\n")
                     }
         
                     //Response Body
                     var responseBody = response["getBody"]()
-                    console.log("|  " ,"");
-                    console.log("| " ,"mimeType : ", responseBody["mimeType"]())
-                    console.log("|  " ,"");
-                    console.log("| " ,"Body");
+                    logString.append("|  ").append("\n")
+                    logString.append("| " + "mimeType : " + responseBody["mimeType"]()).append("\n")
+                    logString.append("|  ").append("\n")
+                    logString.append("| " + "Body").append("\n")
                     var inputSteam = responseBody["in"]()
                     var length = responseBody["length"]()
                     var lengthInt = JavaInteger.valueOf(JavaString.valueOf(length))
@@ -168,20 +171,21 @@
                         } catch (error) {
                             bodyString = "Base64["+byteString.base64()+"]"
                         }
-                        console.log(splitLine(bodyString ,"|    "))
+                        logString.append(splitLine(bodyString ,"|    ")).append("\n")
                     } else {
                         var toString = responseBody.toString()
-                        console.log("|  " ,"respone body [Unknow Type] : ", responseBody.$className," toString:",toString)
+                        logString.append("|  " + "respone body [Unknow Type] : " + responseBody.$className + " toString:" + toString).append("\n")
                     }
         
-                    console.log("└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
-                    console.log("");                
+                    logString.append("└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────").append("\n")
+                    logString.append("").append("\n")                
                 } catch (error) {
-                    console.log(error)
-                    console.log("└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
-                    console.log("");   
+                    logString.append(""+error).append("\n")
+                    logString.append("└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────").append("\n")
+                    logString.append("").append("\n")   
                 }
 
+                console.log(logString)
                 return response;
 
             }
