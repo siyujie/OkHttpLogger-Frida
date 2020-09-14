@@ -4,7 +4,7 @@
 例：frida -U -l okhttp_poker.js -f com.example.demo --no-pause
 接下来使用okhttp的所有请求将被拦截并打印出来；
 扩展函数：
-	find()                                         检查是否使用了Okhttp & 是否可能被混淆 & 寻找okhttp3关键类及函数
+	find()                                         寻找okhttp3关键类及函数	
 	switchLoader(\"okhttp3.OkHttpClient\")         参数：静态分析到的okhttpclient类名
 	hold()                                         开启HOOK拦截
 	history()                                      打印可重新发送的请求				
@@ -53,6 +53,7 @@ var M_rspBody_contentType = "contentType";
 var M_rspBody_create = "create";
 var M_rspBody_source = "source";
 var M_rsp_newBuilder = "newBuilder";
+
 
 
 //----------------------------------
@@ -123,7 +124,7 @@ function printerRequest(request, logString) {
     var headersList = headersToList(requestHeaders)
     var headersSize = getHeaderSize(headersList)
 
-    logString.append("| Request Headers: ").append(""+headersSize).append("\n")
+    logString.append("| Request Headers: ").append("" + headersSize).append("\n")
     if (hasRequestBody) {
         var requestBody = getWrapper(requestBody)
         var contentType = requestBody[M_reqbody_contentType]()
@@ -155,7 +156,7 @@ function printerRequest(request, logString) {
     logString.append("|").append("\n")
     if (!hasRequestBody) {
         logString.append("|" + "--> END ").append("\n")
-    } else if (bodyEncoded(requestHeaders)) {
+    } else if (bodyEncoded(headersList)) {
         logString.append("|" + "--> END  (encoded body omitted > bodyEncoded)").append("\n")
     } else {
         logString.append("| Request Body:").append("\n")
@@ -217,7 +218,7 @@ function printerResponse(response, logString) {
         var resp_headers = getFieldValue(response, F_rsp_headers)
         var respHeadersList = headersToList(resp_headers)
         var respHeaderSize = getHeaderSize(respHeadersList)
-        logString.append("| Response Headers: ").append(""+respHeaderSize).append("\n")
+        logString.append("| Response Headers: ").append("" + respHeaderSize).append("\n")
         if (respHeaderSize == 0) {
             logString.append("|     no headers").append("\n")
         }
@@ -227,7 +228,7 @@ function printerResponse(response, logString) {
         }
 
         var content = "";
-        var nobody = !hasBody(response,respHeadersList)
+        var nobody = !hasBody(response, respHeadersList)
         if (nobody) {
             logString.append("| No Response Body : " + response).append("\n")
             logString.append("|" + "<-- END HTTP").append("\n")
@@ -309,7 +310,7 @@ function getWrapper(object) {
     return chooseInstance
 }
 
-function headersToList(headers){
+function headersToList(headers) {
     var Gson = Java.use("com.singleman.gson.Gson")
     var List = Java.use("java.util.List")
     var gson = Gson.$new()
@@ -363,7 +364,7 @@ function bodyEncoded(namesAndValuesList) {
 }
 
 
-function hasBody(response,namesAndValuesList) {
+function hasBody(response, namesAndValuesList) {
     var javaString = Java.use("java.lang.String")
     var request = getFieldValue(response, F_rsp_request)
     var m = getFieldValue(request, F_req_method);
