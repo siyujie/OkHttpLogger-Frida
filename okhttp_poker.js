@@ -24,7 +24,7 @@ var Cls_OkHttpClient = "okhttp3.OkHttpClient";
 var Cls_Request = "okhttp3.Request";
 var Cls_Response = "okhttp3.Response";
 var Cls_ResponseBody = "okhttp3.ResponseBody";
-var Cls_okio_Buffer = "q.c";
+var Cls_okio_Buffer = "okio.Buffer";
 var F_header_namesAndValues = "namesAndValues";
 var F_req_body = "body";
 var F_req_headers = "headers";
@@ -42,7 +42,7 @@ var M_Call_enqueue = "enqueue";
 var M_Call_execute = "execute";
 var M_Call_request = "request";
 var M_Client_newCall = "newCall";
-var M_buffer_readByteArray = "q";
+var M_buffer_readByteArray = "readByteArray";
 var M_contentType_charset = "charset";
 var M_reqbody_contentLength = "contentLength";
 var M_reqbody_contentType = "contentType";
@@ -258,13 +258,23 @@ function printerResponse(response, logString) {
             }
             //newResponse
             var mediaType = responseBody[M_rspBody_contentType]()
-            var newBody = ResponseBodyWapper[M_rspBody_create](mediaType, rspByteString.toByteArray())
-            var newBuilder = response[M_rsp_newBuilder]()
+            var newBody = null;
+            try {
+                newBody = ResponseBodyWapper[M_rspBody_create](mediaType, rspByteString.toByteArray())
+            } catch (error) {
+                newBody = ResponseBodyWapper[M_rspBody_create](mediaType, readBufferString(rspByteString, charset))
+            }
+            var newBuilder = null;
+            if("" == M_rsp_newBuilder){
+                var ResponseBuilderClazz = response.class.getDeclaredClasses()[0]
+                newBuilder = Java.use(ResponseBuilderClazz.getName()).$new(response)
+            }else{
+                newBuilder = response[M_rsp_newBuilder]()
+            }
             var bodyField = newBuilder.class.getDeclaredField(F_rsp$builder_body)
             bodyField.setAccessible(true)
             bodyField.set(newBuilder, newBody)
             newResponse = newBuilder[M_rsp$builder_build]()
-
 
             if (!isPlaintext(rspByteString)) {
                 logString.append("|" + "<-- END HTTP (binary body omitted)").append("\n");
@@ -692,8 +702,8 @@ function find() {
         ArraysWapper = Java.use("java.util.Arrays")
         ArrayListWapper = Java.use("java.util.ArrayList")
         var isSupport = false;
+        var clz_Protocol = null;
         try {
-            var clz_Protocol = null;
             var clazzNameList = Java.enumerateLoadedClassesSync()
             if (clazzNameList.length == 0) {
                 console.log("ERROR >> [enumerateLoadedClasses] return null !!!!!!")
@@ -790,6 +800,7 @@ function find() {
 
         } catch (error) {
             console.log(error)
+            console.log(Java.use("android.util.Log").getStackTraceString(error))
         }
 
     })
