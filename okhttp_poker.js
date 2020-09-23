@@ -188,12 +188,12 @@ function printerRequest(request, logString) {
                 logString.append("|").append("\n")
                 logString.append("|" + "--> END ").append("\n")
             } else {
-                logString.append(splitLine("Base64[" + reqByteString.base64() + "]", "|   ")).append("\n")
+                logString.append(splitLine(hexToUtf8(reqByteString.hex()), "|   ")).append("\n")
                 logString.append("|").append("\n");
                 logString.append("|" + "--> END  (binary body omitted -> isPlaintext)").append("\n")
             }
         } catch (error) {
-            logString.append(splitLine("Base64[" + reqByteString.base64() + "]", "|   ")).append("\n")
+            logString.append(splitLine(hexToUtf8(reqByteString.hex()), "|   ")).append("\n")
             logString.append("|").append("\n");
             logString.append("|" + "--> END  (binary body omitted -> isPlaintext)").append("\n")
         }
@@ -284,7 +284,7 @@ function printerResponse(response, logString) {
                     var content = readBufferString(rspByteString, charset)
                     logString.append(splitLine(content, "|   ")).append("\n")
                 } catch (error) {
-                    logString.append(splitLine("Base64[" + rspByteString.base64() + "]", "|   ")).append("\n")
+                    logString.append(splitLine(hexToUtf8(rspByteString.hex()), "|   ")).append("\n")
                 }
 
                 logString.append("| ").append("\n");
@@ -300,7 +300,16 @@ function printerResponse(response, logString) {
     return newResponse;
 }
 
+/**
+ * hex to string
+ */
+function hexToUtf8(hex) {
+    return decodeURIComponent('%' + hex.match(/.{1,2}/g).join('%'));
+}
 
+/**
+ * 
+ */
 function getFieldValue(object, fieldName) {
     var field = object.class.getDeclaredField(fieldName);
     field.setAccessible(true)
@@ -313,7 +322,9 @@ function getFieldValue(object, fieldName) {
     return fieldValueWapper
 }
 
-
+/**
+ * 
+ */
 function getWrapper(object) {
     var chooseInstance = null;
     Java.choose(object.getClass().getName(), {
@@ -329,6 +340,9 @@ function getWrapper(object) {
     return chooseInstance
 }
 
+/**
+ * 
+ */
 function headersToList(headers) {
     var gson = GsonWapper.$new()
     var namesAndValues = getFieldValue(headers, F_header_namesAndValues)
@@ -568,7 +582,6 @@ function checkClass(name) {
     }
     return true;
 }
-
 
 /**
 * print request history
