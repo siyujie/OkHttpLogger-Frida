@@ -19,12 +19,12 @@
 							
 */
 var Cls_Call = "okhttp3.Call";
-var Cls_CallBack = "okhttp3.Callback";
+var Cls_CallBack = "okhttp3.Callback";        
 var Cls_OkHttpClient = "okhttp3.OkHttpClient";
 var Cls_Request = "okhttp3.Request";
-var Cls_Response = "okhttp3.Response";
+var Cls_Response = "okhttp3.Response";        
 var Cls_ResponseBody = "okhttp3.ResponseBody";
-var Cls_okio_Buffer = "okio.Buffer";
+var Cls_okio_Buffer = "n1.d";
 var F_header_namesAndValues = "namesAndValues";
 var F_req_body = "body";
 var F_req_headers = "headers";
@@ -54,7 +54,6 @@ var M_rspBody_create = "create";
 var M_rspBody_source = "source";
 var M_rsp_newBuilder = "newBuilder";
 
-
 //----------------------------------
 var JavaStringWapper = null;
 var JavaIntegerWapper = null;
@@ -72,10 +71,11 @@ var OkioBufferWapper = null;
 var OkHttpClientWapper = null;
 var ResponseBodyWapper = null;
 var BufferWapper = null;
+var Utils = null;
 //----------------------------------
 var CallCache = []
 var hookedArray = []
-var filterArray = ["jpg", "png", "webp", "jpeg", "gif", ".data"]
+var filterArray = ["jpg", "png", "webp", "jpeg", ".data"]
 
 
 function buildNewResponse(responseObject) {
@@ -106,9 +106,10 @@ function printAll(responseObject, logString) {
         var request = getFieldValue(responseObject, F_rsp_request)
         printerRequest(request, logString)
     } catch (error) {
-        console.log("print request error : ", error)
+        console.log("print request error : ", error.stack)
         return responseObject;
     }
+    // return responseObject;
     var newResponse = printerResponse(responseObject, logString)
     return newResponse;
 }
@@ -304,7 +305,12 @@ function printerResponse(response, logString) {
  * hex to string
  */
 function hexToUtf8(hex) {
-    return decodeURIComponent('%' + hex.match(/.{1,2}/g).join('%'));
+    try {
+        return decodeURIComponent('%' + hex.match(/.{1,2}/g).join('%'));
+    } catch (error) {
+        return "hex["+hex+"]";
+    }
+    
 }
 
 /**
@@ -474,7 +480,10 @@ function splitLine(string, tag) {
         }
         newSB.append("\n")
     }
-    var lineStr = newSB.deleteCharAt(newSB.length() - 1).toString()
+    var lineStr = "";
+    if(newSB.length() > 0){
+        lineStr = newSB.deleteCharAt(newSB.length() - 1).toString()
+    }
     return lineStr
 }
 
@@ -511,7 +520,7 @@ function hookRealCall(realCallClassName) {
         if ("" != Cls_CallBack) {
             //异步
             RealCall[M_Call_enqueue].overload(Cls_CallBack).implementation = function (callback) {
-                // console.log("-------------------------------------HOOK SUCCESS 异步--------------------------------------------------")
+                console.log("-------------------------------------HOOK SUCCESS 异步--------------------------------------------------")
                 var interfaceClazz = callback.class;
                 var interfaceName = interfaceClazz.getName();
                 var interfaceWapper = Java.use(interfaceName);
@@ -525,7 +534,7 @@ function hookRealCall(realCallClassName) {
                             for (var i = 0; i < methods.length; i++) {
                                 var method = methods[i]
                                 method.setAccessible(true)
-                                if (method.getName() == M_CallBack_onResponse) {
+                                if (method.getName() == M_CallBack_onResponse && Utils.getParameterCount(method) == 2) {
                                     method.invoke(callback, [call, newResponse])
                                     break;
                                 }
@@ -536,7 +545,7 @@ function hookRealCall(realCallClassName) {
                             for (var i = 0; i < methods.length; i++) {
                                 var method = methods[i]
                                 method.setAccessible(true)
-                                if (method.getName() == M_CallBack_onFailure) {
+                                if (method.getName() == M_CallBack_onFailure && Utils.getParameterCount(method) == 2) {
                                     method.invoke(callback, [call, ex])
                                     break;
                                 }
@@ -546,12 +555,13 @@ function hookRealCall(realCallClassName) {
 
                 })
                 this[M_Call_enqueue](proxyCallback.$new())
+                // this[M_Call_enqueue](callback)
             }
         }
 
         //同步  
         RealCall[M_Call_execute].overload().implementation = function () {
-            // console.log("-------------------------------------HOOK SUCCESS 同步--------------------------------------------------")
+            console.log("-------------------------------------HOOK SUCCESS 同步--------------------------------------------------")
             var response = this[M_Call_execute]()
             var newResponse = buildNewResponse(response)
             return newResponse;
@@ -634,6 +644,8 @@ function resend(index) {
  */
 function hold() {
     Java.perform(function () {
+        //
+        Utils = Java.use("com.singleman.okhttp.Utils")
         //Init common
         JavaStringWapper = Java.use("java.lang.String")
         JavaStringBufferWapper = Java.use("java.lang.StringBuilder")
@@ -755,11 +767,11 @@ function find() {
             try {
                 var clz_okclient = Java.use(likelyOkHttpClient).class
                 if (null != clz_okclient) {
-                    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 未 混 淆 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 未 混 淆 (仅参考)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                     isSupport = true;
                 }
             } catch (error) {
-                console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 被 混 淆 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 被 混 淆 (仅参考)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                 isSupport = true;
             }
 
