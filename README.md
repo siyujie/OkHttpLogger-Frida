@@ -4,7 +4,7 @@
 
 ### 使用说明
 
-> ①  首先将 `okhttpfind.dex` 拷贝到 `/data/local/tmp/` 目录下，然后给目标App授予存储权限。
+> ①  首先将 `okhttpfind.dex` 拷贝到 `/data/local/tmp/` 目录下，然后给目标App授予存储权限。[okhttpfind.dex源码链接](https://github.com/siyujie/okhttp_find)
 
 执行命令启动`frida -U -l okhttp_poker.js -f com.example.demo --no-pause`
 
