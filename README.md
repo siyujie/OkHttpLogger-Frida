@@ -4,9 +4,10 @@
 
 ### 使用说明
 
-> ①  首先将 `okhttpfind.dex` 拷贝到 `/data/local/tmp/` 目录下，然后给目标App授予存储权限。[okhttpfind.dex源码链接](https://github.com/siyujie/okhttp_find)
+> ①  首先将 `okhttpfind.dex` 拷贝到 `/data/local/tmp/` 目录下。
+>  [okhttpfind.dex源码链接](https://github.com/siyujie/okhttp_find)
 
-执行命令启动`frida -U -l okhttp_poker.js -f com.example.demo --no-pause`
+执行命令启动`frida -U -l okhttp_poker.js -f com.example.demo --no-pause` 可追加 `-o [output filepath]`保存到文件
 
 > ②  调用函数开始执行
 -  **find() 要等完全启动并执行过网络请求后再进行调用**
@@ -43,7 +44,7 @@
 |   └─User-Agent: Dalvik/2.1.0 (Linux; U; Android 8.1.0; AOSP on msm8996 Build/OPM1.171019.011) Resolution/1080*1920 Version/6.59.0 Build/6590119 Device/(google;AOSP on msm8996) discover/6.59.0
 |
 | Body:
-|   Base64[........]//省略了，太长了
+|   hex[........]//省略了，太长了
 |
 |--> END  (binary body omitted -> isPlaintext)
 |
