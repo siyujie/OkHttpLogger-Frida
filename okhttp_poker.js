@@ -760,7 +760,7 @@ function find() {
 
         } catch (error) {
             console.log(error)
-            console.log(Java.use("android.util.Log").getStackTraceString(error))
+            //console.log(Java.use("android.util.Log").getStackTraceString(error))
         }
     })
 }
