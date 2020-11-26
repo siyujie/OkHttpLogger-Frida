@@ -494,23 +494,12 @@ function hookRealCall(realCallClassName) {
             //异步
             RealCall[M_Call_enqueue].overload(Cls_CallBack).implementation = function (callback) {
                 // console.log("-------------------------------------HOOK SUCCESS 异步--------------------------------------------------")
-                var interfaceClazz = callback.class;
-                var interfaceName = interfaceClazz.getName();
-                var interfaceWapper = Java.use(interfaceName);
-                var proxyCallback = Java.registerClass({
-                    name: "com.proxyCallback",
-                    implements: [interfaceWapper],
-                    methods: {
-                        [M_CallBack_onResponse]: function (call, response) {
-                            var newResponse = buildNewResponse(response)
-                            getWrapper(callback)[M_CallBack_onResponse](call, newResponse)
-                        },
-                        [M_CallBack_onFailure]: function (call, ex) {
-                            getWrapper(callback)[M_CallBack_onFailure](call, ex)
-                        }
-                    }
-                })
-                this[M_Call_enqueue](proxyCallback.$new())
+                realCallBack[M_CallBack_onResponse].overload(Cls_Call,Cls_Response).implementation = function(call, response){
+                    var newResponse = buildNewResponse(response)
+                    this[M_CallBack_onResponse](call,newResponse)
+                }
+                this[M_Call_enqueue](callback)
+                realCallBack.$dispose
             }
         }
         //同步  
