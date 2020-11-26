@@ -653,6 +653,7 @@ function switchLoader(clientName) {
                 })
             }
         }
+		Java.openClassFile("/data/local/tmp/okhttpfind.dex").load()
     })
 }
 
